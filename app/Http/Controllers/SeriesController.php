@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateSeriesRequest;
+use App\Jobs\UpdateSeriesParts;
 use App\Series;
 
 class SeriesController extends Controller
@@ -18,9 +19,8 @@ class SeriesController extends Controller
         $series->title = $request->title;
         $series->save();
 
-        $series->parts->each(function ($part, $index) use ($request) {
-            $part->timestamps = false;
-            $part->update(array_only($request->parts[$index], ['title', 'sort_order']));
-        });
+        dispatch(new UpdateSeriesParts($series, $request->parts));
+
+        return response('queued a job!');
     }
 }
