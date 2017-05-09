@@ -6,10 +6,18 @@
                     <div class="panel-heading">Editing <em>{{ title }}</em></div>
 
                     <div class="panel-body">
+                        <div class="alert alert-success" v-if="message">
+                            {{ message }}
+                        </div>
                         <form @submit.prevent="submit">
-                            <div class="form-group">
+
+                            <div class="form-group" :class="{ 'has-error': errors.title }">
                                 <label for="title" class="control-label">Title</label>
                                 <input type="text" id="title" class="form-control" v-model="title">
+
+                                <div class="help-block" v-if="errors.title">
+                                    {{ errors.title[0] }}
+                                </div>
                             </div>
 
                             <draggable :list="parts" :options="{'handle': '.panel-heading'}" @start="drag=true" @end="drag=false" @change="update">
@@ -17,9 +25,13 @@
                                     <div class="panel-heading">Part {{ index + 1 }} ({{ part.sort_order }})</div>
 
                                     <div class="panel-body">
-                                        <div class="form-group">
+                                        <div class="form-group" :class="{ 'has-error': errors[`parts.${index}.title`] }">
                                             <label>Part title</label>
                                             <input type="text" class="form-control" v-model="parts[index].title">
+
+                                            <div class="help-block" v-if="errors[`parts.${index}.title`]">
+                                                {{ errors[`parts.${index}.title`][0] }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -44,12 +56,19 @@
         data() {
             return {
                 title: this.data.title,
-                parts: this.data.parts
+                parts: this.data.parts,
+                errors: [],
+                message: null
+
             }
         },
         methods: {
             submit() {
-                console.log('submit')
+                axios.patch(`/series/${this.data.id}`, {
+                    title: this.title,
+                    parts: this.parts
+                }).then(response => this.message = 'Series Saved!')
+                    .catch(err => this.errors = err.response.data)
             },
             update() {
                 this.parts.map((part, index) => part.sort_order = index + 1)

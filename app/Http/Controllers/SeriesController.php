@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateSeriesRequest;
 use App\Series;
+use Illuminate\Http\Request;
 
 class SeriesController extends Controller
 {
@@ -12,8 +14,15 @@ class SeriesController extends Controller
         return view('series.edit', compact('series'));
     }
 
-    public function update()
+    public function update(UpdateSeriesRequest $request)
     {
-        
+        $this->validate($request, [
+            'title' => 'required',
+            'parts.*.title' => 'required'
+        ], [
+            'title.required' => 'You must enter series title!'
+        ]);
+
+
     }
 }
