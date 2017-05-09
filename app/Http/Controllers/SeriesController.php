@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateSeriesRequest;
 use App\Series;
-use Illuminate\Http\Request;
 
 class SeriesController extends Controller
 {
@@ -14,15 +13,14 @@ class SeriesController extends Controller
         return view('series.edit', compact('series'));
     }
 
-    public function update(UpdateSeriesRequest $request)
+    public function update(UpdateSeriesRequest $request, Series $series)
     {
-        $this->validate($request, [
-            'title' => 'required',
-            'parts.*.title' => 'required'
-        ], [
-            'title.required' => 'You must enter series title!'
-        ]);
+        $series->title = $request->title;
+        $series->save();
 
-
+        $series->parts->each(function ($part, $index) use ($request) {
+            $part->timestamps = false;
+            $part->update(array_only($request->parts[$index], ['title', 'sort_order']));
+        });
     }
 }
